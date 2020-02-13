@@ -17,9 +17,9 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _loginForm(BuildContext context){
-    final bloc = Provider
+    final bloc = Provider.of(context);
     final size = MediaQuery.of(context).size;
-    
+
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
@@ -46,9 +46,9 @@ class HomePage extends StatelessWidget {
               children: <Widget>[
                 Text('Ingreso', style: TextStyle(fontSize: 20.0)),
                 SizedBox(height: 60.0),
-                _crearEmail(),
+                _crearEmail(blocLoginBloc),
                 SizedBox(height: 60.0),
-                _crearPassword(),
+                _crearPassword(bloc),
                 SizedBox(height: 60.0),
                 _crearBoton(),
               ]
@@ -61,28 +61,43 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _crearEmail(){
-    return Container(
-      child: TextField(
-        keyboardType: TextInputType.emailAddress,
-        decoration: InputDecoration(
-          icon: Icon(Icons.alternate_email, color: Colors.deepPurple),
-          hinText: 'ejemplo@correo.com',
-          labelText: 'Correo Electrónico',
-        ),
-      ),
+  Widget _crearEmail(LoginBloc bloc){
+    return StreamBuilder(
+      stream: bloc.emailStream ,
+      builder: (BuildContext context, AsyncSnapshot snapshot){
+        return Container(
+          child: TextField(
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              icon: Icon(Icons.alternate_email, color: Colors.deepPurple),
+              hinText: 'ejemplo@correo.com',
+              labelText: 'Correo Electrónico',
+              counterText: snapshot.data,
+            ),
+            onChanged: bloc.changeEmail,
+          ),
+        );
+      },
     );
   }
   
-  Widget _crearPassword(){
-    return Container(
-      child: TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          icon: Icon(Icons.lock_outline, color: Colors.deepPurple),
-          labelText: 'Contraseña',
-        ),
-      ),
+  Widget _crearPassword(LoginBloc bloc){
+    return StreamBuilder(
+      stream: bloc.passwordStream,
+      builder: (BuildContext context, AsyncSnapshot snapshot){
+        return Container(
+          padding: EdgeInsets.symetric(horizontal: 20.0),
+          child: TextField(
+            obscureText: true,
+            decoration: InputDecoration(
+              icon: Icon(Icons.lock_outline, color: Colors.deepPurple),
+              labelText: 'Contraseña',
+              counterText: snapshot.data,
+            ),
+            onChanged: bloc.changePassword, 
+          ),
+        );
+      },
     );
   }
 
