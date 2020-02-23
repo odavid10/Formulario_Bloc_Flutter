@@ -16,34 +16,34 @@ class ProductoPage extends StatefulWidget {
 }
 
 class _ProductoPageState extends State<ProductoPage> {
-  
-  final formKey     = GlobalKey<FormState>();
-  final scaffoldKey = GlobalKey<ScaffoldState>();
-  final productoProvider = new ProductosProvider();
 
+  final formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   ProductoModel producto = new ProductoModel();
+  final productoProvider = new ProductosProvider();
   bool _guardando = false;
   File foto;
-
+  
   @override
   Widget build(BuildContext context) {
-
+    
     final ProductoModel prodData = ModalRoute.of(context).settings.arguments;
-    if ( prodData != null ) {
+
+    if(prodData != null){
       producto = prodData;
     }
-    
+
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
         title: Text('Producto'),
         actions: <Widget>[
           IconButton(
-            icon: Icon( Icons.photo_size_select_actual ),
+            icon: Icon(Icons.photo_size_select_actual),
             onPressed: _seleccionarFoto,
           ),
           IconButton(
-            icon: Icon( Icons.camera_alt ),
+            icon: Icon(Icons.camera_alt),
             onPressed: _tomarFoto,
           ),
         ],
@@ -56,185 +56,142 @@ class _ProductoPageState extends State<ProductoPage> {
             child: Column(
               children: <Widget>[
                 _mostrarFoto(),
-                _crearNombre(),
+                _crearNomnbre(),
                 _crearPrecio(),
                 _crearDisponible(),
-                _crearBoton()
+                _crearBoton(),
               ],
             ),
           ),
         ),
       ),
     );
-
   }
 
-  Widget _crearNombre() {
-
+  Widget _crearNomnbre()  {
     return TextFormField(
       initialValue: producto.titulo,
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
-        labelText: 'Producto'
+        labelText: 'Producto',
       ),
-      onSaved: (value) => producto.titulo = value,
-      validator: (value) {
-        if ( value.length < 3 ) {
+      onSave: (value) => producto.titulo = value,
+      validator: (value){
+        if (value.length < 3){
           return 'Ingrese el nombre del producto';
-        } else {
+        }else{
           return null;
         }
       },
     );
-
   }
 
-  Widget _crearPrecio() {
+  Widget _crearPrecio()  {
     return TextFormField(
       initialValue: producto.valor.toString(),
       keyboardType: TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
-        labelText: 'Precio'
+        labelText: 'Precio',
       ),
-      onSaved: (value) => producto.valor = double.parse(value),
-      validator: (value) {
-
-        if ( utils.isNumeric(value)  ) {
+      onSave: (value) => producto.valor = double.parse(value),
+      validator: (value){
+        if(utils.isNumeric(value)){
           return null;
-        } else {
+        }else{
           return 'Sólo números';
         }
-
-      },
+      }
     );
   }
 
-  Widget _crearDisponible() {
-
+  Widget _crearDisponible(){
     return SwitchListTile(
       value: producto.disponible,
       title: Text('Disponible'),
       activeColor: Colors.deepPurple,
-      onChanged: (value)=> setState((){
+      onChanged: (value) => setState((){
         producto.disponible = value;
       }),
     );
-
   }
-
-
-
-  Widget _crearBoton() {
+  
+  Widget _crearBoton()  {
     return RaisedButton.icon(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0)
+        borderRadius: BoirderRadius.circular(20.0),
       ),
       color: Colors.deepPurple,
       textColor: Colors.white,
       label: Text('Guardar'),
-      icon: Icon( Icons.save ),
-      onPressed: ( _guardando ) ? null : _submit,
+      icon: Icon(Icons.save),
+      onPressed: (_guardando) ? null : _submit,
     );
   }
 
   void _submit() async {
-
-    
-
-    if ( !formKey.currentState.validate() ) return;
-
+    if(!formKey.currentState.validate()) return;
     formKey.currentState.save();
 
-    setState(() {_guardando = true; });
+    setState((){_guardando = true;});
 
-    if ( foto != null ) {
+    if(foto != null){
       producto.fotoUrl = await productoProvider.subirImagen(foto);
     }
 
-
-
-    if ( producto.id == null ) {
+    if(prodcuto.id == null){
       productoProvider.crearProducto(producto);
-    } else {
+    }else{
       productoProvider.editarProducto(producto);
     }
 
-
-    // setState(() {_guardando = false; });
+    // setState((){_guardando = false;});
     mostrarSnackbar('Registro guardado');
-
-    Navigator.pop(context);
-
+    Navigator.pop(content);
   }
 
-
-  void mostrarSnackbar(String mensaje) {
-
+  void mostrarSnackbar(String mensaje){
     final snackbar = SnackBar(
-      content: Text( mensaje ),
-      duration: Duration( milliseconds: 1500),
+      content: Text(mensaje),
+      duration: Duration(milliseconds: 1500),
     );
 
     scaffoldKey.currentState.showSnackBar(snackbar);
-
   }
 
-
-  Widget _mostrarFoto() {
-
-    if ( producto.fotoUrl != null ) {
-      
+  Widget _mostrarFoto(){
+    if(producto.fotoUrl != null){
       return FadeInImage(
-        image: NetworkImage( producto.fotoUrl ),
+        image: NetworkImage(producto.image),
         placeholder: AssetImage('assets/jar-loading.gif'),
+        height: 300.0,
+        fit: BoxFit.cover,
+      );
+    }else{
+      return Image(
+        image: AssetImage(foto?.path ?? 'assets/no-image.jpg'),
         height: 300.0,
         fit: BoxFit.contain,
       );
-
-    } else {
-
-      return Image(
-
-        image: AssetImage( foto?.path ?? 'assets/no-image.png'),
-        height: 300.0,
-        fit: BoxFit.cover,
-
-      );
-
     }
-
   }
-
 
   _seleccionarFoto() async {
-
-    _procesarImagen( ImageSource.gallery );
-
+    _procesarImagen(ImageSource.gallery);
   }
-  
-  
+
   _tomarFoto() async {
-
-    _procesarImagen( ImageSource.camera );
-
+    _procesarImagen(ImageSource.camera);
   }
 
-  _procesarImagen( ImageSource origen ) async {
-
+  _procesarImagen(ImageSource origen ) async {
     foto = await ImagePicker.pickImage(
-      source: origen
+      source: origen,
     );
 
-    if ( foto != null ) {
+    if(foto != null){
       producto.fotoUrl = null;
     }
-
-    setState(() {});
-
+    setState((){});
   }
 
-
 }
-
-
-
